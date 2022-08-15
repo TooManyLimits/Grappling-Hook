@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IDI",
+    "ICI",
+    "LCL"
+  ],
+  "key": {
+    "L": {
+      "tag": "minecraft:logs"
+    },
+    "I": {
+      "item": "minecraft:copper_ingot"
+    },
+    "C": {
+      "item": "minecraft:chain"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "item": "limits_grapple:grappling_hook"
+  }
+}

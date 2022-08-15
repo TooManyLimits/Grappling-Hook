@@ -18,7 +18,8 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "io.github.moonlight_maya.limits_grapple.GrappleMod"
+			"init": "io.github.moonlight_maya.limits_grapple.GrappleMod",
+			"client_init": "io.github.moonlight_maya.limits_grapple.GrappleModClient"
 		},
 		"depends": [
 			{
