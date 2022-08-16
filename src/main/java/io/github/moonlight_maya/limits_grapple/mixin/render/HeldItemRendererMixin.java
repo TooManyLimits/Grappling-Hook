@@ -1,6 +1,5 @@
 package io.github.moonlight_maya.limits_grapple.mixin.render;
 
-import io.github.moonlight_maya.limits_grapple.GrappleItem;
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
 import io.github.moonlight_maya.limits_grapple.GrappleModClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;

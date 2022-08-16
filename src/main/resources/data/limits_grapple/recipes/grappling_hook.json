@@ -7,7 +7,7 @@
   ],
   "key": {
     "L": {
-      "tag": "minecraft:logs"
+      "item": "minecraft:leather"
     },
     "I": {
       "item": "minecraft:copper_ingot"
