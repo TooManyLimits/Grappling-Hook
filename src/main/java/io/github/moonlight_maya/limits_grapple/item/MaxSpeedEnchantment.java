@@ -23,7 +23,7 @@ public class MaxSpeedEnchantment extends Enchantment {
 
 	@Override
 	public int getMinPower(int level) {
-		return 3 + level * 8;
+		return 5 + (level-1) * 10;
 	}
 
 	@Override

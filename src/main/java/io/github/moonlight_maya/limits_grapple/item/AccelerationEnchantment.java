@@ -23,7 +23,7 @@ public class AccelerationEnchantment extends Enchantment {
 
 	@Override
 	public int getMinPower(int level) {
-		return level * 8;
+		return 8 + (level-1) * 9;
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
+import net.minecraft.item.ToolMaterials;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
@@ -51,6 +52,16 @@ public class GrappleItem extends Item {
 		double dotProd = diff.normalize().dotProduct(user.getRotationVector());
 		if (dotProd < -0.4)
 			disconnectGrapple(user, stack);
+	}
+
+	@Override
+	public boolean isEnchantable(ItemStack stack) {
+		return super.isEnchantable(stack);
+	}
+
+	@Override
+	public int getEnchantability() {
+		return ToolMaterials.DIAMOND.getEnchantability();
 	}
 
 	@Override
@@ -106,7 +117,7 @@ public class GrappleItem extends Item {
 	public static final double RANGE_BASE = 48.0F;
 	public static final double RANGE_PER_LEVEL = 12.0F;
 	public static final double FIRE_SPEED_BASE = 10.0;
-	public static final double FIRE_SPEED_PER_LEVEL = 10.0; //uses range enchant
+	public static final double FIRE_SPEED_PER_LEVEL = 2.5; //uses range enchant
 
 	public static final double ACCEL_BASE = 0.1;
 	public static final double ACCEL_PER_LEVEL = 0.04;
