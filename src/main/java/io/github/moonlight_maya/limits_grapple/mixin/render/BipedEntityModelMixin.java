@@ -38,6 +38,8 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 	@Shadow
 	@Final
 	public ModelPart leftArm;
+	@Shadow
+	public boolean sneaking;
 	@Unique
 	private BipedEntityModel.ArmPose tempRightArmPose;
 	@Unique
@@ -77,7 +79,8 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 				if (tag.getBoolean("Active")) {
 					Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
 					float tickDelta = MinecraftClient.getInstance().getTickDelta();
-					Vec3d armPivot = playerEntity.getLerpedPos(tickDelta).add(0, 22*0.875/16, 0);
+					double pivotY = (sneaking ? 18.8 : 22) * 0.875 / 16;
+					Vec3d armPivot = playerEntity.getLerpedPos(tickDelta).add(0, pivotY, 0);
 					float entityYaw = (float) Math.toRadians(MathHelper.lerp(tickDelta, playerEntity.prevBodyYaw, playerEntity.bodyYaw));
 					Vec3d sideVec = new Vec3d(-Math.cos(entityYaw), 0, -Math.sin(entityYaw));
 					if (left) sideVec = sideVec.multiply(-1);
@@ -89,6 +92,8 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 					armPart.yaw = head.yaw;
 					armPart.pitch = head.pitch - 1.5f;
 				}
+				if (sneaking)
+					armPart.pitch -= 0.4f;
 				return true;
 			}
 		}
