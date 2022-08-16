@@ -1,6 +1,9 @@
-package io.github.moonlight_maya.limits_grapple;
+package io.github.moonlight_maya.limits_grapple.item;
 
+import io.github.moonlight_maya.limits_grapple.GrappleMod;
+import io.github.moonlight_maya.limits_grapple.ServerPlayerVelocityHelper;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -36,8 +39,12 @@ public class GrappleItem extends Item {
 			return;
 
 		int ticksElapsed = getMaxUseTime(stack) - remainingUseTicks;
+		if (!world.isClient && ticksElapsed == 8) { //Only decay durability after fired for 8 ticks
+			final Hand useHand = user.getStackInHand(Hand.MAIN_HAND) == stack ? Hand.MAIN_HAND : Hand.OFF_HAND;
+			stack.damage(1, user, p -> p.sendToolBreakStatus(useHand));
+		}
 		if (world.isClient && user instanceof ClientPlayerEntity cpe)
-			affectClientPlayer(cpe, tag, ticksElapsed);
+			affectClientPlayer(cpe, stack, ticksElapsed);
 
 		//Decide if we want to break the grapple
 		Vec3d diff = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z")).subtract(user.getEyePos());
@@ -59,17 +66,21 @@ public class GrappleItem extends Item {
 
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
-		//Perform raycast
 		ItemStack grappleItem = playerEntity.getStackInHand(hand);
-		double maxRange = 64;
+
+		//Get raycast range
+		double range = RANGE_BASE + RANGE_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, grappleItem);
+
+		//Perform raycast
 		Vec3d startVec = playerEntity.getEyePos();
-		Vec3d diffVec = playerEntity.getRotationVector().multiply(maxRange);
+		Vec3d diffVec = playerEntity.getRotationVector().multiply(range);
 		Vec3d endVec = startVec.add(diffVec);
 		BlockHitResult result = world.raycast(new RaycastContext(startVec, endVec, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, playerEntity));
 
 		//Check for dual wield behavior
-		if (playerEntity.getStackInHand(hand == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND).isOf(GrappleMod.GRAPPLE_ITEM)) {
-			boolean isThisInRightHand = (hand == Hand.MAIN_HAND) == (playerEntity.getMainArm() == Arm.RIGHT);
+		boolean isDualWield = playerEntity.getStackInHand(hand == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND).isOf(GrappleMod.GRAPPLE_ITEM);
+		if (isDualWield && hand == Hand.MAIN_HAND) {
+			boolean isThisInRightHand = playerEntity.getMainArm() == Arm.RIGHT;
 
 			Vec3d playerVel;
 			if (world.isClient)
@@ -83,24 +94,44 @@ public class GrappleItem extends Item {
 				return TypedActionResult.pass(grappleItem);
 		}
 
-		fireGrapple(playerEntity, grappleItem, result.getPos(), result.getType() != HitResult.Type.MISS);
+		boolean hit = result.getType() != HitResult.Type.MISS;
+		if (hit || !isDualWield || hand == Hand.OFF_HAND) {
+			fireGrapple(playerEntity, grappleItem, result.getPos(), hit);
+			return ItemUsage.consumeHeldItem(world, playerEntity, hand);
+		}
 
-		return ItemUsage.consumeHeldItem(world, playerEntity, hand);
+		return TypedActionResult.pass(grappleItem);
 	}
 
-	public static final double ACCEL = 0.1;// * 3;
-	public static final double JERK = 0.03 / 20;
-	public static final double LOOK_COMPONENT = 0.15;// * 3;
-	public static final double INPUT_COMPONENT = 0.25;// * 3;
-	public static final double MAX_SPEED = 2.0;// * 3;
-	public static final double GRAPPLE_FIRE_SPEED = 10.0;
-	private static void affectClientPlayer(ClientPlayerEntity clientPlayerEntity, NbtCompound stackTag, int ticksElapsed) {
+	public static final double RANGE_BASE = 48.0F;
+	public static final double RANGE_PER_LEVEL = 12.0F;
+	public static final double FIRE_SPEED_BASE = 10.0;
+	public static final double FIRE_SPEED_PER_LEVEL = 10.0; //uses range enchant
+
+	public static final double ACCEL_BASE = 0.1;
+	public static final double ACCEL_PER_LEVEL = 0.04;
+	public static final double JERK_BASE = 0.025 / 20;
+	public static final double JERK_PER_LEVEL = 0.02 / 20;
+
+	public static final double MAX_SPEED_BASE = 1.5;
+	public static final double MAX_SPEED_PER_LEVEL = 0.3;
+
+	public static final double LOOK_COMPONENT_BASE = 0.1;
+	public static final double LOOK_COMPONENT_PER_LEVEL = 0.1;
+	public static final double INPUT_COMPONENT_BASE = 0.175;
+	public static final double INPUT_COMPONENT_PER_LEVEL = 0.175;
+
+
+	private static void affectClientPlayer(ClientPlayerEntity clientPlayerEntity, ItemStack stack, int ticksElapsed) {
+		NbtCompound stackTag = stack.getOrCreateNbt();
+
 		//Get some useful vectors:
 		Vec3d anchorPoint = new Vec3d(stackTag.getDouble("X"), stackTag.getDouble("Y"), stackTag.getDouble("Z"));
 		Vec3d playerPos = clientPlayerEntity.getEyePos();
 
 		//Determine if the grapple has been launched far enough yet to hit the endpoint and start pulling.
-		ticksElapsed -= playerPos.distanceTo(anchorPoint) / GRAPPLE_FIRE_SPEED - 1;
+		double fireSpeed = FIRE_SPEED_BASE + FIRE_SPEED_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, stack);
+		ticksElapsed -= playerPos.distanceTo(anchorPoint) / fireSpeed - 1;
 		if (ticksElapsed <= 0)
 			return;
 
@@ -113,17 +144,22 @@ public class GrappleItem extends Item {
 		Vec3d rightVec = new Vec3d(Math.cos(yaw), 0, Math.sin(yaw));
 
 		//Strength of the pull force
-		double pullForce = ACCEL + JERK * ticksElapsed;
+		int enchLevel = EnchantmentHelper.getLevel(GrappleMod.ACCELERATION_ENCHANTMENT, stack);
+		double accel = ACCEL_BASE + ACCEL_PER_LEVEL * enchLevel;
+		double jerk = JERK_BASE + JERK_PER_LEVEL * enchLevel;
+		double pullForce = accel + jerk * ticksElapsed;
+		double lookComponent = LOOK_COMPONENT_BASE + LOOK_COMPONENT_PER_LEVEL * enchLevel;
+		double inputComponent = INPUT_COMPONENT_BASE + INPUT_COMPONENT_PER_LEVEL * enchLevel;
 
 		//Get velocity, add each component, scaled in the proper ways.
 		Vec3d vel = clientPlayerEntity.getVelocity()
 				.add(pullVector.multiply(pullForce))
-				.add(lookVec.multiply(LOOK_COMPONENT))
-				.add(lookVec.multiply(INPUT_COMPONENT * clientPlayerEntity.input.forwardMovement))
-				.add(rightVec.multiply(INPUT_COMPONENT * clientPlayerEntity.input.sidewaysMovement));
+				.add(lookVec.multiply(lookComponent + inputComponent * clientPlayerEntity.input.forwardMovement))
+				.add(rightVec.multiply(inputComponent * clientPlayerEntity.input.sidewaysMovement));
 
 		//Clamp velocity to MAX_SPEED
-		double clamped = Math.min(vel.length(), MAX_SPEED);
+		double maxSpeed = MAX_SPEED_BASE + MAX_SPEED_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.MAX_SPEED_ENCHANTMENT, stack);
+		double clamped = Math.min(vel.length(), maxSpeed);
 		vel = vel.normalize().multiply(clamped);
 		clientPlayerEntity.setVelocity(vel);
 	}

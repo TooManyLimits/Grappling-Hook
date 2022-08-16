@@ -1,4 +1,8 @@
 {
   "limits_grapple": "Limits' Grapple",
-  "item.limits_grapple.grappling_hook": "Grappling Hook"
+  "item.limits_grapple.grappling_hook": "Grappling Hook",
+
+  "enchantment.limits_grapple.range": "Range",
+  "enchantment.limits_grapple.acceleration": "Acceleration",
+  "enchantment.limits_grapple.max_speed": "Max Speed"
 }
