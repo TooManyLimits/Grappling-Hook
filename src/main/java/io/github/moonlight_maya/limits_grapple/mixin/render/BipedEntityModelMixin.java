@@ -1,6 +1,7 @@
 package io.github.moonlight_maya.limits_grapple.mixin.render;
 
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
+import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -12,8 +13,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Arm;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,6 +40,8 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 	public ModelPart leftArm;
 	@Shadow
 	public boolean sneaking;
+	@Shadow
+	public float leaningPitch;
 	@Unique
 	private BipedEntityModel.ArmPose tempRightArmPose;
 	@Unique
@@ -78,16 +80,10 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 				NbtCompound tag = itemStack.getOrCreateNbt();
 				if (tag.getBoolean("Active")) {
 					Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
-					float tickDelta = MinecraftClient.getInstance().getTickDelta();
-					double pivotY = (sneaking ? 18.8 : 22) * 0.875 / 16;
-					Vec3d armPivot = playerEntity.getLerpedPos(tickDelta).add(0, pivotY, 0);
-					float entityYaw = (float) Math.toRadians(MathHelper.lerp(tickDelta, playerEntity.prevBodyYaw, playerEntity.bodyYaw));
-					Vec3d sideVec = new Vec3d(-Math.cos(entityYaw), 0, -Math.sin(entityYaw));
-					if (left) sideVec = sideVec.multiply(-1);
-					armPivot = armPivot.add(sideVec.multiply(5*0.875/16));
-					Vec3d diffVec = anchor.subtract(armPivot).normalize();
-					armPart.yaw = (float) (Math.atan2(diffVec.z, diffVec.x) - Math.PI/2 - entityYaw);
-					armPart.pitch = (float) (-Math.asin(diffVec.y) - 1.578f);
+					Vec3f transformedAnchor = RenderingUtils.getTransformedAnchor(playerEntity, anchor, left);
+					transformedAnchor.normalize();
+					armPart.yaw = (float) (Math.atan2(transformedAnchor.getZ(), transformedAnchor.getX()) - Math.PI / 2);
+					armPart.pitch = (float) (-Math.asin(transformedAnchor.getY()) - Math.PI / 2);
 				} else {
 					armPart.yaw = head.yaw;
 					armPart.pitch = head.pitch - 1.5f;

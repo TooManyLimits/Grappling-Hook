@@ -25,7 +25,7 @@ public class RangeEnchantment extends Enchantment {
 
 	@Override
 	public int getMinPower(int level) {
-		return (level-1) * 7;
+		return (level-1) * 9;
 	}
 
 	@Override

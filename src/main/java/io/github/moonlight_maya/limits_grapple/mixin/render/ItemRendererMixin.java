@@ -1,6 +1,6 @@
 package io.github.moonlight_maya.limits_grapple.mixin.render;
 
-import io.github.moonlight_maya.limits_grapple.ChainRenderer;
+import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
 import io.github.moonlight_maya.limits_grapple.GrappleModClient;
 import net.minecraft.client.MinecraftClient;
@@ -33,33 +33,25 @@ public class ItemRendererMixin {
 		AbstractClientPlayerEntity cpe = GrappleModClient.currentRenderedPlayerEntity;
 		if (cpe == null) return;
 
-
-		float tickDelta = MinecraftClient.getInstance().getTickDelta();
-		double entityYaw = Math.toRadians(renderMode.isFirstPerson() ? cpe.getYaw(tickDelta) : MathHelper.lerp(tickDelta, cpe.prevBodyYaw, cpe.bodyYaw));
-		Vec3d sideVec = new Vec3d(-Math.cos(entityYaw), 0, -Math.sin(entityYaw));
-		if (leftHanded) sideVec = sideVec.multiply(-1);
-		Vec3d armPos = cpe.getLerpedPos(tickDelta).add(0, 22*0.875/16, 0).add(sideVec.multiply(5*0.875/16));
 		Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
-
-		double dist = anchor.distanceTo(armPos);
+		Vec3f transformedAnchor = RenderingUtils.getTransformedAnchor(cpe, anchor, leftHanded);
+		double dist = Math.sqrt(transformedAnchor.dot(transformedAnchor));
 
 		switch (renderMode) {
-			case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
+			case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
-				ChainRenderer.renderChains(dist, matrices, vertexConsumers, light, overlay);
+				RenderingUtils.renderChains(dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
 			}
-			case FIRST_PERSON_RIGHT_HAND -> {
-
-			}
-			case FIRST_PERSON_LEFT_HAND -> {
-
-			}
+//			case FIRST_PERSON_RIGHT_HAND -> {
+//
+//			}
+//			case FIRST_PERSON_LEFT_HAND -> {
+//
+//			}
 		}
-
-
 
 	}
 
