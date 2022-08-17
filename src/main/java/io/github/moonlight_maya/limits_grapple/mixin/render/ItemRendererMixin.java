@@ -1,9 +1,9 @@
 package io.github.moonlight_maya.limits_grapple.mixin.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
 import io.github.moonlight_maya.limits_grapple.GrappleModClient;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -12,7 +12,6 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,23 +33,25 @@ public class ItemRendererMixin {
 		if (cpe == null) return;
 
 		Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
-		Vec3f transformedAnchor = RenderingUtils.getTransformedAnchor(cpe, anchor, leftHanded);
-		double dist = Math.sqrt(transformedAnchor.dot(transformedAnchor));
 
 		switch (renderMode) {
-			case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
+			case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
+				Vec3f transformedAnchor = RenderingUtils.getTransformedAnchorThirdPerson(cpe, anchor, leftHanded);
+				double dist = Math.sqrt(transformedAnchor.dot(transformedAnchor));
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
 				RenderingUtils.renderChains(dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
 			}
-//			case FIRST_PERSON_RIGHT_HAND -> {
-//
-//			}
-//			case FIRST_PERSON_LEFT_HAND -> {
-//
-//			}
+			case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
+				double dist = cpe.getEyePos().distanceTo(anchor);
+				matrices.push();
+				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
+				matrices.translate(0, 0, -0.875);
+				RenderingUtils.renderChains(dist+2, matrices, vertexConsumers, light, overlay);
+				matrices.pop();
+			}
 		}
 
 	}

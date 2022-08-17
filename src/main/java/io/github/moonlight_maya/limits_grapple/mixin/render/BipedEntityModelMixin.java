@@ -2,7 +2,6 @@ package io.github.moonlight_maya.limits_grapple.mixin.render;
 
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
 import io.github.moonlight_maya.limits_grapple.RenderingUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.AnimalModel;
@@ -80,7 +79,7 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 				NbtCompound tag = itemStack.getOrCreateNbt();
 				if (tag.getBoolean("Active")) {
 					Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
-					Vec3f transformedAnchor = RenderingUtils.getTransformedAnchor(playerEntity, anchor, left);
+					Vec3f transformedAnchor = RenderingUtils.getTransformedAnchorThirdPerson(playerEntity, anchor, left);
 					transformedAnchor.normalize();
 					armPart.yaw = (float) (Math.atan2(transformedAnchor.getZ(), transformedAnchor.getX()) - Math.PI / 2);
 					armPart.pitch = (float) (-Math.asin(transformedAnchor.getY()) - Math.PI / 2);

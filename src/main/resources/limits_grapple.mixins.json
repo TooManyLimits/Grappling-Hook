@@ -9,8 +9,11 @@
   ],
   "client": [
     "render.BipedEntityModelMixin",
+    "render.GameRendererInvoker",
+    "render.GameRendererMixin",
     "render.HeldItemRendererMixin",
-    "render.ItemRendererMixin"
+    "render.ItemRendererMixin",
+    "render.RenderSystemMixin"
   ],
   "injectors": {
     "defaultRequire": 1

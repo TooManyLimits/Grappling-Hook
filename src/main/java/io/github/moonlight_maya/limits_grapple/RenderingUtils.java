@@ -1,9 +1,11 @@
 package io.github.moonlight_maya.limits_grapple;
 
+import io.github.moonlight_maya.limits_grapple.mixin.render.GameRendererInvoker;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
@@ -11,7 +13,7 @@ import net.minecraft.util.math.*;
 
 public class RenderingUtils {
 
-	public static Vec3f getTransformedAnchor(AbstractClientPlayerEntity playerEntity, Vec3d anchor, boolean left) {
+	public static Vec3f getTransformedAnchorThirdPerson(AbstractClientPlayerEntity playerEntity, Vec3d anchor, boolean left) {
 		float tickDelta = MinecraftClient.getInstance().getTickDelta();
 		anchor = anchor.subtract(playerEntity.getLerpedPos(tickDelta));
 		Vec3f transformedAnchor = new Vec3f(anchor);
@@ -57,9 +59,32 @@ public class RenderingUtils {
 		return h;
 	}
 
+	public static Vec3f transformWorldToView(Vec3d worldPos) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		Camera camera = client.gameRenderer.getCamera();
+		Matrix3f cameraMat = new Matrix3f(camera.getRotation());
+		cameraMat.invert();
+		Vec3f result = new Vec3f(worldPos.subtract(camera.getPos()));
+		result.transform(cameraMat);
+		return result;
+	}
+
+	public static Vec3f transformWorldToScreen(Vec3d worldPos) {
+		Vector4f projectiveCamSpace = new Vector4f(transformWorldToView(worldPos));
+		MinecraftClient client = MinecraftClient.getInstance();
+		GameRenderer gameRenderer = client.gameRenderer;
+		Camera camera = gameRenderer.getCamera();
+		Matrix4f projMat = gameRenderer.getBasicProjectionMatrix(((GameRendererInvoker) gameRenderer).limits_grapple$getFov(camera, client.getTickDelta(), true));
+		projectiveCamSpace.transform(projMat);
+		float x = projectiveCamSpace.getX();
+		float y = projectiveCamSpace.getY();
+		float z = projectiveCamSpace.getZ();
+		float w = projectiveCamSpace.getW();
+		return new Vec3f(x/w, y/w, z/w);
+	}
 
 	public static void renderChains(double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
-		matrices.translate(0, -distance, 0);
+		matrices.translate(0, -distance-0.5, 0);
 		for (int i=0;i<distance-1; i++) {
 			matrices.translate(0, 1, 0);
 			MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);

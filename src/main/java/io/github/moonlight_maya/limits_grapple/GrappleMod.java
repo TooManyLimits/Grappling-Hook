@@ -15,6 +15,7 @@ import org.quiltmc.qsl.item.setting.api.QuiltItemSettings;
 public class GrappleMod implements ModInitializer {
 
 	public static final String MODID = "limits_grapple";
+	public static boolean DISABLING_RENDERSYSTEM_CLEAR = false;
 
 	public static final Item GRAPPLE_ITEM = new GrappleItem(new QuiltItemSettings().group(ItemGroup.TRANSPORTATION).maxCount(1).maxDamage(768));
 
