@@ -119,18 +119,18 @@ public class GrappleItem extends Item {
 	public static final double FIRE_SPEED_BASE = 10.0;
 	public static final double FIRE_SPEED_PER_LEVEL = 2.5; //uses range enchant
 
-	public static final double ACCEL_BASE = 0;//0.1;
+	public static final double ACCEL_BASE = 0.1;
 	public static final double ACCEL_PER_LEVEL = 0.04;
-	public static final double JERK_BASE = 0;//0.025 / 20;
-	public static final double JERK_PER_LEVEL = 0.02 / 20;
+	public static final double JERK_BASE = 0.025 / 20;
+	public static final double JERK_PER_LEVEL = 0.01 / 20;
 
 	public static final double MAX_SPEED_BASE = 1.5;
 	public static final double MAX_SPEED_PER_LEVEL = 0.3;
 
-	public static final double LOOK_COMPONENT_BASE = 0;//0.1;
-	public static final double LOOK_COMPONENT_PER_LEVEL = 0.1;
-	public static final double INPUT_COMPONENT_BASE = 0;//0.175;
-	public static final double INPUT_COMPONENT_PER_LEVEL = 0.175;
+	public static final double LOOK_COMPONENT_BASE = 0.1;
+	public static final double LOOK_COMPONENT_PER_LEVEL = 0.06;
+	public static final double INPUT_COMPONENT_BASE = 0.175;
+	public static final double INPUT_COMPONENT_PER_LEVEL = 0.1;
 
 
 	private static void affectClientPlayer(ClientPlayerEntity clientPlayerEntity, ItemStack stack, int ticksElapsed) {

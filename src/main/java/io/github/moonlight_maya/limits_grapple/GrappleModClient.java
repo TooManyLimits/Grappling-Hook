@@ -9,8 +9,9 @@ import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
 public class GrappleModClient implements ClientModInitializer {
 
 	public static AbstractClientPlayerEntity currentRenderedPlayerEntity;
+    public static boolean DISABLE_DEPTH_CLEAR_FLAG = false;
 
-	@Override
+    @Override
 	public void onInitializeClient(ModContainer mod) {
 		ModelPredicateProviderRegistry.register(GrappleMod.GRAPPLE_ITEM, new Identifier(GrappleMod.MODID, "shot"), (itemStack, clientWorld, livingEntity, i) -> {
 			if (livingEntity == null) return 0.0f;

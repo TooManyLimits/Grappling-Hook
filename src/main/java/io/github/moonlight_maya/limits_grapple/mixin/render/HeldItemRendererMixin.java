@@ -1,14 +1,11 @@
 package io.github.moonlight_maya.limits_grapple.mixin.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
 import io.github.moonlight_maya.limits_grapple.GrappleModClient;
 import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
@@ -83,31 +80,21 @@ public abstract class HeldItemRendererMixin {
 		Vec3f diffScaled = diff.copy();
 		diffScaled.multiplyComponentwise(1, -1, 1);
 		transformedAnchor.add(diffScaled);
-		transformedAnchor.add(1, -0.5f, 0);
 
 		transformedAnchor.normalize();
 		float pitchOffset = (float) (Math.asin(transformedAnchor.getY()));
 		float yawOffset = (float) (Math.atan2(transformedAnchor.getX(), transformedAnchor.getZ()));
 
-		double fov = ((GameRendererInvoker) (MinecraftClient.getInstance().gameRenderer)).limits_grapple$getFov(MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().getTickDelta(), true);
-		double radFov = Math.toRadians(fov);
-		double rad70 = Math.toRadians(70);
-		double ratio = Math.sin(rad70 / 2) / Math.sin(radFov / 2);
-		pitchOffset *= ratio;
-		yawOffset *= ratio;
-
-//		matrices.translate(0, 0.125, 0);
 		matrices.translate(diff.getX(), diff.getY(), diff.getZ());
+		matrices.translate(i*-1.0/16, 3.0/16, 0);
 		matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yawOffset));
 		matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(pitchOffset));
-//		matrices.translate(0, -0.125, 0);
-		matrices.translate(leftHand ? -0.5 : 0.5, 0.5, 0.5);
 
 		//Cursed rendering hack to allow the chains to render with depth in first person (needs RenderSystem Mixin)
-		RenderSystem.enableDepthTest();
+//		RenderSystem.enableDepthTest();
 		renderItem(player, item, leftHand ? ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND : ModelTransformation.Mode.FIRST_PERSON_RIGHT_HAND, leftHand, matrices, vertexConsumers, light);
-		RenderSystem.disableDepthTest();
-		((VertexConsumerProvider.Immediate) vertexConsumers).draw();
+//		RenderSystem.disableDepthTest();
+//		((VertexConsumerProvider.Immediate) vertexConsumers).draw();
 
 		matrices.pop();
 

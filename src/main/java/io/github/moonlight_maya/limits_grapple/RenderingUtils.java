@@ -1,11 +1,9 @@
 package io.github.moonlight_maya.limits_grapple;
 
-import io.github.moonlight_maya.limits_grapple.mixin.render.GameRendererInvoker;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
@@ -69,22 +67,11 @@ public class RenderingUtils {
 		return result;
 	}
 
-	public static Vec3f transformWorldToScreen(Vec3d worldPos) {
-		Vector4f projectiveCamSpace = new Vector4f(transformWorldToView(worldPos));
-		MinecraftClient client = MinecraftClient.getInstance();
-		GameRenderer gameRenderer = client.gameRenderer;
-		Camera camera = gameRenderer.getCamera();
-		Matrix4f projMat = gameRenderer.getBasicProjectionMatrix(((GameRendererInvoker) gameRenderer).limits_grapple$getFov(camera, client.getTickDelta(), true));
-		projectiveCamSpace.transform(projMat);
-		float x = projectiveCamSpace.getX();
-		float y = projectiveCamSpace.getY();
-		float z = projectiveCamSpace.getZ();
-		float w = projectiveCamSpace.getW();
-		return new Vec3f(x/w, y/w, z/w);
-	}
-
-	public static void renderChains(double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
+	public static void renderChainsBasic(double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
 		matrices.translate(0, -distance, 0);
+//		matrices.scale(1, (float) distance, 1);
+//		MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
+
 		for (int i=0;i<distance-1; i++) {
 			matrices.translate(0, 1, 0);
 			MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
