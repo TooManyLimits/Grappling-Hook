@@ -70,35 +70,40 @@ public abstract class HeldItemRendererMixin {
 		if (!tag.getBoolean("Active"))
 			return;
 
+		//I'm upset that this isn't perfect, but I've already spent too long on it so this will have to do
+
 		matrices.push();
 		Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
 		Vec3f transformedAnchor = RenderingUtils.transformWorldToView(anchor);
-
-
 
 		//Stolen from applyEquipmentOffset
 		boolean leftHand = (player.getMainArm() == Arm.LEFT) == (hand == Hand.MAIN_HAND);
 		int i = leftHand ? -1 : 1;
 		Vec3f diff = new Vec3f(i * 0.56F, -0.52F + equipProgress * -0.6F, -0.7200000286102295f);
 		Vec3f diffScaled = diff.copy();
-		diffScaled.scale(0.5f);
+		diffScaled.multiplyComponentwise(1, -1, 1);
 		transformedAnchor.add(diffScaled);
+		transformedAnchor.add(1, -0.5f, 0);
 
 		transformedAnchor.normalize();
 		float pitchOffset = (float) (Math.asin(transformedAnchor.getY()));
 		float yawOffset = (float) (Math.atan2(transformedAnchor.getX(), transformedAnchor.getZ()));
 
 		double fov = ((GameRendererInvoker) (MinecraftClient.getInstance().gameRenderer)).limits_grapple$getFov(MinecraftClient.getInstance().gameRenderer.getCamera(), MinecraftClient.getInstance().getTickDelta(), true);
-		pitchOffset /= (fov / 70);
-		yawOffset /= (fov / 70);
+		double radFov = Math.toRadians(fov);
+		double rad70 = Math.toRadians(70);
+		double ratio = Math.sin(rad70 / 2) / Math.sin(radFov / 2);
+		pitchOffset *= ratio;
+		yawOffset *= ratio;
 
-		matrices.translate(0, 0.125, 0);
-		matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(pitchOffset));
-		matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yawOffset));
-
+//		matrices.translate(0, 0.125, 0);
 		matrices.translate(diff.getX(), diff.getY(), diff.getZ());
-//		applyEquipOffset(matrices, leftHand ? Arm.LEFT : Arm.RIGHT, equipProgress);
+		matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yawOffset));
+		matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(pitchOffset));
+//		matrices.translate(0, -0.125, 0);
+		matrices.translate(leftHand ? -0.5 : 0.5, 0.5, 0.5);
 
+		//Cursed rendering hack to allow the chains to render with depth in first person (needs RenderSystem Mixin)
 		RenderSystem.enableDepthTest();
 		renderItem(player, item, leftHand ? ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND : ModelTransformation.Mode.FIRST_PERSON_RIGHT_HAND, leftHand, matrices, vertexConsumers, light);
 		RenderSystem.disableDepthTest();

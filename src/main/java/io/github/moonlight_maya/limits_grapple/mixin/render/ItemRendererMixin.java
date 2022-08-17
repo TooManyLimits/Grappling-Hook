@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
 import io.github.moonlight_maya.limits_grapple.GrappleModClient;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -45,11 +46,15 @@ public class ItemRendererMixin {
 				matrices.pop();
 			}
 			case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
-				double dist = cpe.getEyePos().distanceTo(anchor);
+				boolean left = renderMode == ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND;
+				Vec3f viewPos = RenderingUtils.transformWorldToView(anchor);
+				viewPos.add(left ? -0.5f : 0.5f, 0.5f, -0.5f);
+
+				double dist = Math.sqrt(viewPos.dot(viewPos));
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
-				RenderingUtils.renderChains(dist+2, matrices, vertexConsumers, light, overlay);
+				RenderingUtils.renderChains(dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
 			}
 		}
