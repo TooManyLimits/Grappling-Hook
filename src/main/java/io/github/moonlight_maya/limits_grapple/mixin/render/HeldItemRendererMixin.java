@@ -90,11 +90,7 @@ public abstract class HeldItemRendererMixin {
 		matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yawOffset));
 		matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(pitchOffset));
 
-		//Cursed rendering hack to allow the chains to render with depth in first person (needs RenderSystem Mixin)
-//		RenderSystem.enableDepthTest();
 		renderItem(player, item, leftHand ? ModelTransformation.Mode.FIRST_PERSON_LEFT_HAND : ModelTransformation.Mode.FIRST_PERSON_RIGHT_HAND, leftHand, matrices, vertexConsumers, light);
-//		RenderSystem.disableDepthTest();
-//		((VertexConsumerProvider.Immediate) vertexConsumers).draw();
 
 		matrices.pop();
 

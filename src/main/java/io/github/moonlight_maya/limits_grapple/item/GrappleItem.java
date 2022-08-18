@@ -1,7 +1,9 @@
 package io.github.moonlight_maya.limits_grapple.item;
 
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
+import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import io.github.moonlight_maya.limits_grapple.ServerPlayerVelocityHelper;
+import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
@@ -12,6 +14,7 @@ import net.minecraft.item.ItemUsage;
 import net.minecraft.item.ToolMaterials;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
@@ -22,7 +25,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
-public class GrappleItem extends Item {
+public class GrappleItem extends Item implements FabricItem {
 	public GrappleItem(Settings settings) {
 		super(settings);
 	}
@@ -75,12 +78,17 @@ public class GrappleItem extends Item {
 		disconnectGrapple(user, stack);
 	}
 
+	public boolean allowNbtUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack, ItemStack newStack) {
+		return false;
+	}
+
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
 		ItemStack grappleItem = playerEntity.getStackInHand(hand);
 
 		//Get raycast range
 		double range = RANGE_BASE + RANGE_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, grappleItem);
+		range = Math.max(range, 108); //cap it at the max value, so /give'd grapples don't try to raycast absurd distance.
 
 		//Perform raycast
 		Vec3d startVec = playerEntity.getEyePos();
@@ -114,10 +122,10 @@ public class GrappleItem extends Item {
 		return TypedActionResult.pass(grappleItem);
 	}
 
-	public static final double RANGE_BASE = 48.0F;
-	public static final double RANGE_PER_LEVEL = 12.0F;
-	public static final double FIRE_SPEED_BASE = 10.0;
-	public static final double FIRE_SPEED_PER_LEVEL = 2.5; //uses range enchant
+	public static final double RANGE_BASE = 48.0;
+	public static final double RANGE_PER_LEVEL = 12.0;
+	public static final double FIRE_SPEED_BASE = 6.0;//10.0;
+	public static final double FIRE_SPEED_PER_LEVEL = 1.0;//2.5; //uses range enchant
 
 	public static final double ACCEL_BASE = 0.1;
 	public static final double ACCEL_PER_LEVEL = 0.04;

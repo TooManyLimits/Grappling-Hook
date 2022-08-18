@@ -41,7 +41,8 @@ public abstract class ItemRendererMixin {
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
-				RenderingUtils.renderChainsBasic(dist, matrices, vertexConsumers, light, overlay);
+//				RenderingUtils.renderChainsBasic(stack, dist, matrices, vertexConsumers, light, overlay);
+				RenderingUtils.renderChainsFancy(stack, dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
 			}
 			case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
@@ -55,8 +56,8 @@ public abstract class ItemRendererMixin {
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
-
-				RenderingUtils.renderChainsBasic(dist, matrices, vertexConsumers, light, overlay);
+//				RenderingUtils.renderChainsBasic(stack, dist, matrices, vertexConsumers, light, overlay);
+				RenderingUtils.renderChainsFancy(stack, dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
 			}
 		}

@@ -1,13 +1,23 @@
 package io.github.moonlight_maya.limits_grapple;
 
+import io.github.moonlight_maya.limits_grapple.item.GrappleItem;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
+import it.unimi.dsi.fastutil.ints.Int2FloatArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public class RenderingUtils {
 
@@ -67,16 +77,105 @@ public class RenderingUtils {
 		return result;
 	}
 
-	public static void renderChainsBasic(double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
-		matrices.translate(0, -distance, 0);
-//		matrices.scale(1, (float) distance, 1);
-//		MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
+	public static void renderChainsBasic(ItemStack stack, double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
+		matrices.translate(0, -distance-1, 0);
 
 		for (int i=0;i<distance-1; i++) {
+			if (distance - 1 - i < 0.3) {
+				break;
+			}
 			matrices.translate(0, 1, 0);
 			MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
 		}
 	}
 
+	/**
+	 * Because I felt like it :)
+	 *
+	 * Fancy Formula. As t slides from 0 to 1, the grapple moves from hand to wall.
+	 * x = (t^2 - t^16) * Distance / 35 * sin(40 * t)
+	 * y = t * distance
+	 * z = (t^2 - t^16) * Distance / 25 * cos(45 * t)
+	 */
+	public static void renderChainsFancy(ItemStack stack, double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
+		matrices.translate(0, 1, 0);
+		AbstractClientPlayerEntity cpe = GrappleModClient.currentRenderedPlayerEntity;
+		float tickDelta = MinecraftClient.getInstance().getTickDelta();
+
+		double fireSpeed = GrappleItem.FIRE_SPEED_BASE + GrappleItem.FIRE_SPEED_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, stack);
+
+		double rand = ((cpe.world.getTime() - cpe.getItemUseTime()) * 68239	% Math.PI) * 2 / Math.PI - 1; //Random yet consistent value from -1 to 1, chosen at the time of the item use
+
+		double ticksElapsed = cpe.getItemUseTime() + tickDelta;
+		double ticksToPullBack = Math.min(distance / 15, 3);
+		double ticksToReach = distance / fireSpeed - ticksToPullBack;
+
+		if (ticksElapsed > ticksToReach + ticksToPullBack) {
+			renderChainsBasic(stack, distance, matrices, vcp, light, overlay);
+			return;
+		}
+
+		double xRad = (3 + rand) * distance / 35;
+		double zRad = (3 + rand*rand) * distance / 25;
+		double xFreq = 40 + rand * 4;
+		double zFreq = 45 + rand * 3;
+		double dt = 1.0 / calcFancyChainCount(distance);
+		double maxT = Math.min(ticksElapsed / ticksToReach, 1);
+
+		if (ticksElapsed > ticksToReach) {
+			double f = 1 - (ticksElapsed - ticksToReach) / ticksToPullBack;
+			xRad *= f;
+			zRad *= f;
+			xFreq += (1 - f);
+			zFreq += (1 - f);
+		}
+
+		Vec3f cur = new Vec3f(), prev = new Vec3f();
+
+		for (double t = dt; t < maxT; t += dt) {
+			//Calculate next x, z
+			double t2 = t * t;
+			t2 = t2 * t2 - t2; //t^2 - t^4
+
+			double x = t2 * xRad * Math.sin(xFreq * t);
+			double y = t * distance;
+			double z = t2 * zRad * Math.cos(zFreq * t);
+			cur.set((float) x, (float) y, (float) z);
+
+			//Calculate difference, update prev
+			Vec3f diff = cur.copy();
+			diff.subtract(prev);
+			prev.set(cur);
+
+			if (y < 0.5)
+				continue;
+
+			//Transform and render chain according to diff
+			float len = MathHelper.fastInverseSqrt(diff.dot(diff));
+			diff.scale(len);
+			len = 1 / len;
+
+			float pitch = (float) Math.asin(diff.getZ());
+			float yaw = (float) Math.atan2(diff.getY(), diff.getX())-MathHelper.PI/2;
+
+			matrices.push();
+			matrices.translate(x, (t - dt) * -distance, z);
+			matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(pitch));
+			matrices.multiply(Vec3f.POSITIVE_Z.getRadialQuaternion(yaw));
+			matrices.scale(1, len, 1);
+			matrices.translate(0, -1, 0);
+			MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
+			matrices.pop();
+		}
+
+
+//		matrices.scale(1, (float) distance, 1);
+//		MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
+
+	}
+
+	private static int calcFancyChainCount(double distance) {
+		return (int) (2 * distance * Math.pow(1.5, 1 + distance / 25));
+	}
 
 }
