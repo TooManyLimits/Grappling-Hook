@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
 
-	@Inject(method = "renderWorld", at=@At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", shift = At.Shift.BEFORE))
+	@Inject(method = "renderWorld", at=@At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", shift = At.Shift.BEFORE, remap = false))
 	public void limits_grapple$perhapsDisableDepthClear(float tickDelta, long limitTime, MatrixStack matrix, CallbackInfo ci) {
 		Entity cameraOwner = MinecraftClient.getInstance().getCameraEntity();
 		if (cameraOwner instanceof AbstractClientPlayerEntity playerEntity) {
@@ -25,7 +25,7 @@ public abstract class GameRendererMixin {
 		}
 	}
 
-	@Inject(method = "renderWorld", at=@At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", shift = At.Shift.AFTER))
+	@Inject(method = "renderWorld", at=@At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", shift = At.Shift.AFTER, remap = false))
 	public void limits_grapple$reEnableDepthClear(float tickDelta, long limitTime, MatrixStack matrix, CallbackInfo ci) {
 		GrappleModClient.DISABLE_DEPTH_CLEAR_FLAG = false;
 	}

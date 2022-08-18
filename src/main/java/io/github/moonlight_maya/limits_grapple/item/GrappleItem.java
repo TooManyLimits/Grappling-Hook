@@ -88,7 +88,7 @@ public class GrappleItem extends Item implements FabricItem {
 
 		//Get raycast range
 		double range = RANGE_BASE + RANGE_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, grappleItem);
-		range = Math.max(range, 108); //cap it at the max value, so /give'd grapples don't try to raycast absurd distance.
+		range = Math.min(range, 108); //cap it at the max value, so /give'd grapples don't try to raycast absurd distance.
 
 		//Perform raycast
 		Vec3d startVec = playerEntity.getEyePos();
