@@ -1,7 +1,6 @@
 package io.github.moonlight_maya.limits_grapple.item;
 
 import io.github.moonlight_maya.limits_grapple.GrappleMod;
-import io.github.moonlight_maya.limits_grapple.RenderingUtils;
 import io.github.moonlight_maya.limits_grapple.ServerPlayerVelocityHelper;
 import net.fabricmc.fabric.api.item.v1.FabricItem;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -14,7 +13,6 @@ import net.minecraft.item.ItemUsage;
 import net.minecraft.item.ToolMaterials;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;

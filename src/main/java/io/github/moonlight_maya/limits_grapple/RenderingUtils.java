@@ -1,9 +1,6 @@
 package io.github.moonlight_maya.limits_grapple;
 
 import io.github.moonlight_maya.limits_grapple.item.GrappleItem;
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.ints.Int2FloatArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -15,10 +12,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-
 public class RenderingUtils {
 
 	public static Vec3f getTransformedAnchorThirdPerson(AbstractClientPlayerEntity playerEntity, Vec3d anchor, boolean left) {
@@ -28,7 +21,29 @@ public class RenderingUtils {
 		float entityYaw = getTheH(playerEntity);
 		transformedAnchor.transform(new Matrix3f(Vec3f.POSITIVE_Y.getDegreesQuaternion(entityYaw)));
 		float leaningPitch = playerEntity.getLeaningPitch(tickDelta);
-		if (leaningPitch > 0) {
+		if (playerEntity.isFallFlying()) {
+
+			float j = (float) playerEntity.getRoll() + tickDelta;
+			float k = MathHelper.clamp(j * j / 100.0F, 0.0F, 1.0F);
+			if (!playerEntity.isUsingRiptide()) {
+				Quaternion quat = Vec3f.POSITIVE_X.getDegreesQuaternion(k * (-90.0F - playerEntity.getPitch()));
+				transformedAnchor.transform(new Matrix3f(quat));
+			}
+
+			Vec3d vec3d = playerEntity.getRotationVec(tickDelta);
+			Vec3d vec3d2 = playerEntity.getVelocity();
+			double d = vec3d2.horizontalLengthSquared();
+			double e = vec3d.horizontalLengthSquared();
+
+			if (d > 0.0 && e > 0.0) {
+				double l = (vec3d2.x * vec3d.x + vec3d2.z * vec3d.z) / Math.sqrt(d * e);
+				double m = vec3d2.x * vec3d.z - vec3d2.z * vec3d.x;
+				float rad = (float)(Math.signum(m) * Math.acos(l));
+				Quaternion quat = Vec3f.NEGATIVE_Y.getRadialQuaternion(rad);
+				transformedAnchor.transform(new Matrix3f(quat));
+			}
+
+		} else if (leaningPitch > 0) {
 			float pitchMod = playerEntity.isTouchingWater() ? playerEntity.getPitch(tickDelta) : 0;
 			Quaternion quat = Vec3f.NEGATIVE_X.getDegreesQuaternion(leaningPitch * (90 + pitchMod));
 			transformedAnchor.transform(new Matrix3f(quat));
