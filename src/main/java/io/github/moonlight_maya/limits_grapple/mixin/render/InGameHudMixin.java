@@ -31,8 +31,8 @@ public class InGameHudMixin extends DrawableHelper {
 	@Shadow
 	private int scaledHeight;
 	private static final Identifier CROSSHAIR_TEXTURE = new Identifier(GrappleMod.MODID, "textures/crosshair_indicator.png");
-	private static final int CROSSHAIR_TEXTURE_WIDTH = 20;
-	private static final int CROSSHAIR_TEXTURE_HEIGHT = 20;
+	private static final int CROSSHAIR_TEXTURE_WIDTH = 15;
+	private static final int CROSSHAIR_TEXTURE_HEIGHT = 15;
 
 	private static final Vector4f HIT_COLOR = new Vector4f(0.2f, 0.2f, 1.0f, 1.0f);
 	private static final Vector4f MISS_COLOR = new Vector4f(0.6f, 0.6f, 0.3f, 1.0f);
