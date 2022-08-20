@@ -84,15 +84,7 @@ public class GrappleItem extends Item implements FabricItem {
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
 		ItemStack grappleItem = playerEntity.getStackInHand(hand);
 
-		//Get raycast range
-		double range = RANGE_BASE + RANGE_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, grappleItem);
-		range = Math.min(range, 108); //cap it at the max value, so /give'd grapples don't try to raycast absurd distance.
-
-		//Perform raycast
-		Vec3d startVec = playerEntity.getEyePos();
-		Vec3d diffVec = playerEntity.getRotationVector().multiply(range);
-		Vec3d endVec = startVec.add(diffVec);
-		BlockHitResult result = world.raycast(new RaycastContext(startVec, endVec, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, playerEntity));
+		BlockHitResult result = GrappleItem.raycast(playerEntity, grappleItem);
 
 		//Check for dual wield behavior
 		boolean isDualWield = playerEntity.getStackInHand(hand == Hand.MAIN_HAND ? Hand.OFF_HAND : Hand.MAIN_HAND).isOf(GrappleMod.GRAPPLE_ITEM);
@@ -105,10 +97,13 @@ public class GrappleItem extends Item implements FabricItem {
 			else
 				playerVel = ServerPlayerVelocityHelper.getVelocity((ServerPlayerEntity) playerEntity);
 
-			boolean swingingRight = playerVel.crossProduct(diffVec).y > 0; //swinging around the right side of something, so we should use left hand
+			boolean swingingRight = playerVel.crossProduct(playerEntity.getRotationVector()).y > 0; //swinging around the right side of something, so we should use left hand
 
-			if (isThisInRightHand == swingingRight)
-				return TypedActionResult.pass(grappleItem);
+			if (isThisInRightHand == swingingRight) {
+				ItemStack offHandItem = playerEntity.getOffHandStack();
+				if (GrappleItem.raycast(playerEntity, offHandItem).getType() != HitResult.Type.MISS)
+					return TypedActionResult.pass(grappleItem);
+			}
 		}
 
 		boolean hit = result.getType() != HitResult.Type.MISS;
@@ -118,6 +113,18 @@ public class GrappleItem extends Item implements FabricItem {
 		}
 
 		return TypedActionResult.pass(grappleItem);
+	}
+
+	public static BlockHitResult raycast(PlayerEntity user, ItemStack grappleItem) {
+		//Get raycast range
+		double range = RANGE_BASE + RANGE_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, grappleItem);
+		range = Math.min(range, 108); //cap it at the max value, so /give'd grapples don't try to raycast absurd distance.
+
+		//Perform raycast
+		Vec3d startVec = user.getEyePos();
+		Vec3d diffVec = user.getRotationVector().multiply(range);
+		Vec3d endVec = startVec.add(diffVec);
+		return user.world.raycast(new RaycastContext(startVec, endVec, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, user));
 	}
 
 	public static final double RANGE_BASE = 48.0;

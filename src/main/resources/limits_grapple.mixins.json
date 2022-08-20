@@ -12,6 +12,7 @@
     "render.GameRendererInvoker",
     "render.GameRendererMixin",
     "render.HeldItemRendererMixin",
+    "render.InGameHudMixin",
     "render.ItemRendererMixin",
     "render.RenderSystemMixin"
   ],

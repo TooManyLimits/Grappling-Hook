@@ -21,6 +21,8 @@ public class RenderingUtils {
 		float entityYaw = getTheH(playerEntity);
 		transformedAnchor.transform(new Matrix3f(Vec3f.POSITIVE_Y.getDegreesQuaternion(entityYaw)));
 		float leaningPitch = playerEntity.getLeaningPitch(tickDelta);
+
+		//Check PlayerEntityRenderer.setupTransforms() for how these if statement blocks were made
 		if (playerEntity.isFallFlying()) {
 
 			float j = (float) playerEntity.getRoll() + tickDelta;
@@ -50,6 +52,7 @@ public class RenderingUtils {
 			if (playerEntity.isInSwimmingPose())
 				transformedAnchor.add(0, 0.875f, -0.3f*0.875f);
 		}
+
 		//transformedAnchor is now in player space.
 		Vec3f playerSpacePivot = new Vec3f((left ? 1 : -1) * 5*0.875f/16f, (playerEntity.isInSneakingPose() ? 18.8f : 22) * 0.875f / 16, 0);
 		transformedAnchor.subtract(playerSpacePivot); //TransformedAnchor is now relative to the player space pivot.
@@ -92,6 +95,7 @@ public class RenderingUtils {
 		return result;
 	}
 
+	//Renders the chains extending out as a basic line
 	public static void renderChainsBasic(ItemStack stack, double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
 		matrices.translate(0, -distance-1, 0);
 
@@ -106,11 +110,12 @@ public class RenderingUtils {
 
 	/**
 	 * Because I felt like it :)
+	 * Renders some fancy chains that swirl around as they get further from the grapple hook
 	 *
 	 * Fancy Formula. As t slides from 0 to 1, the grapple moves from hand to wall.
-	 * x = (t^2 - t^16) * Distance / 35 * sin(40 * t)
+	 * x = (t^2 - t^4) * (3 + random) * Distance / 35 * sin((40 + 4 * random) * t)
 	 * y = t * distance
-	 * z = (t^2 - t^16) * Distance / 25 * cos(45 * t)
+	 * z = (t^2 - t^4) * (3 * random^2) * Distance / 25 * cos((45 + 3 * random) * t)
 	 */
 	public static void renderChainsFancy(ItemStack stack, double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
 		matrices.translate(0, 1, 0);
@@ -190,6 +195,8 @@ public class RenderingUtils {
 	}
 
 	private static int calcFancyChainCount(double distance) {
+		//Not an exact formula by any means, i just came up with it randomly lol
+		//doesnt matter a whole lot really
 		return (int) (2 * distance * Math.pow(1.5, 1 + distance / 25));
 	}
 
