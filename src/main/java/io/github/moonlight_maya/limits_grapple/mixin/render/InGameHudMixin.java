@@ -83,8 +83,12 @@ public class InGameHudMixin extends DrawableHelper {
 	}
 
 	private void drawHitResult(MatrixStack matrices, BlockHitResult hitResult, boolean left) {
+
+		boolean wouldHit = hitResult.getType() != HitResult.Type.MISS &&
+				MinecraftClient.getInstance().world != null &&
+				!MinecraftClient.getInstance().world.getBlockState(hitResult.getBlockPos()).isIn(GrappleMod.NO_GRAPPLE_BLOCKS);
 		//Set color
-		if (hitResult.getType() != HitResult.Type.MISS)
+		if (wouldHit)
 			RenderSystem.setShaderColor(HIT_COLOR.getX(), HIT_COLOR.getY(), HIT_COLOR.getZ(), HIT_COLOR.getW());
 		else
 			RenderSystem.setShaderColor(MISS_COLOR.getX(), MISS_COLOR.getY(), MISS_COLOR.getZ(), MISS_COLOR.getW());

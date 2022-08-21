@@ -101,12 +101,16 @@ public class GrappleItem extends Item implements FabricItem {
 
 			if (isThisInRightHand == swingingRight) {
 				ItemStack offHandItem = playerEntity.getOffHandStack();
-				if (GrappleItem.raycast(playerEntity, offHandItem).getType() != HitResult.Type.MISS)
+				BlockHitResult offHandWouldHit = GrappleItem.raycast(playerEntity, offHandItem);
+				if (offHandWouldHit.getType() != HitResult.Type.MISS && !world.getBlockState(offHandWouldHit.getBlockPos()).isIn(GrappleMod.NO_GRAPPLE_BLOCKS)) {
+
 					return TypedActionResult.pass(grappleItem);
+				}
+
 			}
 		}
 
-		boolean hit = result.getType() != HitResult.Type.MISS;
+		boolean hit = result.getType() != HitResult.Type.MISS && !world.getBlockState(result.getBlockPos()).isIn(GrappleMod.NO_GRAPPLE_BLOCKS);
 		if (hit || !isDualWield || hand == Hand.OFF_HAND) {
 			fireGrapple(playerEntity, grappleItem, result.getPos(), hit);
 			return ItemUsage.consumeHeldItem(world, playerEntity, hand);

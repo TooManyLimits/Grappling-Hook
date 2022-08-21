@@ -4,8 +4,10 @@ import io.github.moonlight_maya.limits_grapple.item.AccelerationEnchantment;
 import io.github.moonlight_maya.limits_grapple.item.GrappleItem;
 import io.github.moonlight_maya.limits_grapple.item.MaxSpeedEnchantment;
 import io.github.moonlight_maya.limits_grapple.item.RangeEnchantment;
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.quiltmc.loader.api.ModContainer;
@@ -17,6 +19,8 @@ public class GrappleMod implements ModInitializer {
 	public static final String MODID = "limits_grapple";
 
 	public static final Item GRAPPLE_ITEM = new GrappleItem(new QuiltItemSettings().group(ItemGroup.TRANSPORTATION).maxCount(1).maxDamage(768));
+
+	public static final TagKey<Block> NO_GRAPPLE_BLOCKS = TagKey.of(Registry.BLOCK_KEY, new Identifier(MODID, "no_grapple"));
 
 	public static final RangeEnchantment RANGE_ENCHANTMENT = new RangeEnchantment();
 	public static final AccelerationEnchantment ACCELERATION_ENCHANTMENT = new AccelerationEnchantment();
