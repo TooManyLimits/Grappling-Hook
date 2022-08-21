@@ -94,8 +94,10 @@ public class GrappleItem extends Item implements FabricItem {
 			Vec3d playerVel;
 			if (world.isClient)
 				playerVel = playerEntity.getVelocity();
+			else if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity)
+				playerVel = ServerPlayerVelocityHelper.getVelocity(serverPlayerEntity);
 			else
-				playerVel = ServerPlayerVelocityHelper.getVelocity((ServerPlayerEntity) playerEntity);
+				playerVel = new Vec3d(0, 0, 0); //shouldn't ever happen, but just in case
 
 			boolean swingingRight = playerVel.crossProduct(playerEntity.getRotationVector()).y > 0; //swinging around the right side of something, so we should use left hand
 

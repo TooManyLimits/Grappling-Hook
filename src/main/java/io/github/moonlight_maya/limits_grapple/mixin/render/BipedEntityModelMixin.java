@@ -40,8 +40,6 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity> extends Anim
 	public ModelPart leftArm;
 	@Shadow
 	public boolean sneaking;
-	@Shadow
-	public float leaningPitch;
 	@Unique
 	private BipedEntityModel.ArmPose tempRightArmPose;
 	@Unique

@@ -113,9 +113,9 @@ public class RenderingUtils {
 	 * Renders some fancy chains that swirl around as they get further from the grapple hook
 	 *
 	 * Fancy Formula. As t slides from 0 to 1, the grapple moves from hand to wall.
-	 * x = (t^2 - t^4) * (3 + random) * Distance / 35 * sin((40 + 4 * random) * t)
+	 * x = (t^4 - t^2) * (3 + random) * Distance / 35 * sin((30 + 16 * random) * t)
 	 * y = t * distance
-	 * z = (t^2 - t^4) * (3 * random^2) * Distance / 25 * cos((45 + 3 * random) * t)
+	 * z = (t^4 - t^2) * (3 + random^3) * Distance / 25 * cos((38 + 12 * random) * t)
 	 */
 	public static void renderChainsFancy(ItemStack stack, double distance, MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay) {
 		matrices.translate(0, 1, 0);
@@ -124,7 +124,7 @@ public class RenderingUtils {
 
 		double fireSpeed = GrappleItem.FIRE_SPEED_BASE + GrappleItem.FIRE_SPEED_PER_LEVEL * EnchantmentHelper.getLevel(GrappleMod.RANGE_ENCHANTMENT, stack);
 
-		double rand = ((cpe.world.getTime() - cpe.getItemUseTime()) * 68239	% Math.PI) * 2 / Math.PI - 1; //Random yet consistent value from -1 to 1, chosen at the time of the item use
+		double rand = ((cpe.world.getTime() - cpe.getItemUseTime()) * 68239	% Math.PI) * 2 / Math.PI - 1; //Randomish yet consistent value from -1 to 1, chosen at the time of the item use
 
 		double ticksElapsed = cpe.getItemUseTime() + tickDelta;
 		double ticksToPullBack = Math.min(distance / 15, 3);
@@ -136,7 +136,7 @@ public class RenderingUtils {
 		}
 
 		double xRad = (3 + rand) * distance / 35;
-		double zRad = (3 + rand*rand) * distance / 25;
+		double zRad = (3 + rand*rand*rand) * distance / 25;
 		double xFreq = 30 + rand * 16;
 		double zFreq = 38 + rand * 12;
 		double dt = 1.0 / calcFancyChainCount(distance);
@@ -155,7 +155,7 @@ public class RenderingUtils {
 		for (double t = dt; t < maxT; t += dt) {
 			//Calculate next x, z
 			double t2 = t * t;
-			t2 = t2 * t2 - t2; //t^2 - t^4
+			t2 = t2 * t2 - t2; //t^4 - t^2
 
 			double x = t2 * xRad * Math.sin(xFreq * t + rand * 3);
 			double y = t * distance;
@@ -187,11 +187,6 @@ public class RenderingUtils {
 			MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
 			matrices.pop();
 		}
-
-
-//		matrices.scale(1, (float) distance, 1);
-//		MinecraftClient.getInstance().getBlockRenderManager().renderBlockAsEntity(Blocks.CHAIN.getDefaultState(), matrices, vcp, light, overlay);
-
 	}
 
 	private static int calcFancyChainCount(double distance) {

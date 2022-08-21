@@ -71,7 +71,8 @@ public abstract class ItemRendererMixin {
 			MinecraftClient client = MinecraftClient.getInstance();
 			GameRenderer renderer = client.gameRenderer;
 			double fov = ((GameRendererInvoker) renderer).limits_grapple$getFov(renderer.getCamera(), client.getTickDelta(), false);
-			((VertexConsumerProvider.Immediate) vertexConsumers).draw();
+			if (vertexConsumers instanceof  VertexConsumerProvider.Immediate immediate)
+				immediate.draw();
 			renderer.loadProjectionMatrix(renderer.getBasicProjectionMatrix(fov));
 		}
 	}

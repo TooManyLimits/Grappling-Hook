@@ -29,14 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class HeldItemRendererMixin {
 
 	@Shadow
-	protected abstract void applyEquipOffset(MatrixStack matrices, Arm arm, float equipProgress);
-
-	@Shadow
 	public abstract void renderItem(LivingEntity entity, ItemStack stack, ModelTransformation.Mode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light);
-
-	@Shadow
-	@Final
-	private MinecraftClient client;
 
 	@Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformation$Mode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at=@At("HEAD"))
 	public void limits_grapple$storeCurrentRenderedPlayer(LivingEntity entity, ItemStack stack, ModelTransformation.Mode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
@@ -66,8 +59,6 @@ public abstract class HeldItemRendererMixin {
 		NbtCompound tag = item.getOrCreateNbt();
 		if (!tag.getBoolean("Active"))
 			return;
-
-		//I'm upset that this isn't perfect, but I've already spent too long on it so this will have to do
 
 		matrices.push();
 		Vec3d anchor = new Vec3d(tag.getDouble("X"), tag.getDouble("Y"), tag.getDouble("Z"));
