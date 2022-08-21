@@ -137,8 +137,8 @@ public class RenderingUtils {
 
 		double xRad = (3 + rand) * distance / 35;
 		double zRad = (3 + rand*rand) * distance / 25;
-		double xFreq = 40 + rand * 4;
-		double zFreq = 45 + rand * 3;
+		double xFreq = 30 + rand * 16;
+		double zFreq = 38 + rand * 12;
 		double dt = 1.0 / calcFancyChainCount(distance);
 		double maxT = Math.min(ticksElapsed / ticksToReach, 1);
 
@@ -157,9 +157,9 @@ public class RenderingUtils {
 			double t2 = t * t;
 			t2 = t2 * t2 - t2; //t^2 - t^4
 
-			double x = t2 * xRad * Math.sin(xFreq * t);
+			double x = t2 * xRad * Math.sin(xFreq * t + rand * 3);
 			double y = t * distance;
-			double z = t2 * zRad * Math.cos(zFreq * t);
+			double z = t2 * zRad * Math.cos(zFreq * t + rand * 3);
 			cur.set((float) x, (float) y, (float) z);
 
 			//Calculate difference, update prev
