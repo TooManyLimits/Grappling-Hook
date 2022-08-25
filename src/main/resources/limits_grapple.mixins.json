@@ -9,6 +9,7 @@
   ],
   "client": [
     "render.BipedEntityModelMixin",
+    "render.EntityRendererMixin",
     "render.GameRendererInvoker",
     "render.GameRendererMixin",
     "render.HeldItemRendererMixin",
