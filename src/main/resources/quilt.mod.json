@@ -24,7 +24,7 @@
 		"depends": [
 			{
 				"id": "quilt_loader",
-				"versions": ">=0.17.0-"
+				"versions": ">=0.17.10"
 			},
 			{
 				"id": "quilted_fabric_api",
@@ -33,6 +33,12 @@
 			{
 				"id": "minecraft",
 				"versions": ">=1.19"
+			},
+			{
+				"id": "pehkui",
+				"versions": ">=3.6.3",
+				"reason": "So that the grappling animation will still work well when players are scaled using Pehkui",
+				"optional": true
 			}
 		]
 	},

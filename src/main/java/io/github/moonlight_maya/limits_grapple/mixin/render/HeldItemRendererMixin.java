@@ -69,13 +69,19 @@ public abstract class HeldItemRendererMixin {
 		int i = leftHand ? -1 : 1;
 		Vec3f diff = new Vec3f(i * 0.56F, -0.52F + equipProgress * -0.6F, -0.7200000286102295f);
 		Vec3f diffScaled = diff.copy();
-		diffScaled.multiplyComponentwise(1, -1, 1);
+		float scaleFactor = RenderingUtils.getSizeMultiplier(player, tickDelta);
+		diffScaled.multiplyComponentwise(scaleFactor, -scaleFactor, scaleFactor);
 		transformedAnchor.add(diffScaled);
 
 		transformedAnchor.normalize();
 		float pitchOffset = (float) (Math.asin(transformedAnchor.getY()));
 		float yawOffset = (float) (Math.atan2(transformedAnchor.getX(), transformedAnchor.getZ()));
 
+
+//		matrices.scale(scaleFactor, scaleFactor, scaleFactor);
+		//Following translation is to move the item from the center of the screen
+		//to the left or right side, depending on the hand holding it. This part
+		//does not need to take the scale into account.
 		matrices.translate(diff.getX(), diff.getY(), diff.getZ());
 		matrices.translate(i*-1.0/16, 3.0/16, 0);
 		matrices.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(yawOffset));

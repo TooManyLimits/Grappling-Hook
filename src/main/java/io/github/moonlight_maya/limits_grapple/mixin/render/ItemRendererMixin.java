@@ -41,6 +41,8 @@ public abstract class ItemRendererMixin {
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
+				//Modify distance based on pekhui if needed
+				dist /= RenderingUtils.getSizeMultiplier(cpe, MinecraftClient.getInstance().getTickDelta());
 //				RenderingUtils.renderChainsBasic(stack, dist, matrices, vertexConsumers, light, overlay);
 				RenderingUtils.renderChainsFancy(stack, dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
@@ -56,12 +58,13 @@ public abstract class ItemRendererMixin {
 				matrices.push();
 				matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90));
 				matrices.translate(0, 0, -0.875);
+				//Modify distance based on pekhui if needed
+				dist /= RenderingUtils.getSizeMultiplier(cpe, MinecraftClient.getInstance().getTickDelta());
 //				RenderingUtils.renderChainsBasic(stack, dist, matrices, vertexConsumers, light, overlay);
 				RenderingUtils.renderChainsFancy(stack, dist, matrices, vertexConsumers, light, overlay);
 				matrices.pop();
 			}
 		}
-
 	}
 
 	@Inject(

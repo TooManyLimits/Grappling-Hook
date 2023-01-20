@@ -11,9 +11,10 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.*;
+import org.quiltmc.loader.api.QuiltLoader;
+import virtuoel.pehkui.util.ScaleUtils;
 
 public class RenderingUtils {
-
 	public static Vec3f getTransformedAnchorThirdPerson(AbstractClientPlayerEntity playerEntity, Vec3d anchor, boolean left) {
 		float tickDelta = MinecraftClient.getInstance().getTickDelta();
 		anchor = anchor.subtract(playerEntity.getLerpedPos(tickDelta));
@@ -21,6 +22,9 @@ public class RenderingUtils {
 		float entityYaw = getTheH(playerEntity);
 		transformedAnchor.transform(new Matrix3f(Vec3f.POSITIVE_Y.getDegreesQuaternion(entityYaw)));
 		float leaningPitch = playerEntity.getLeaningPitch(tickDelta);
+
+		//Get pehkui scale
+		float sizeMul = getSizeMultiplier(playerEntity, tickDelta);
 
 		//Check PlayerEntityRenderer.setupTransforms() for how these if statement blocks were made
 		if (playerEntity.isFallFlying()) {
@@ -54,10 +58,19 @@ public class RenderingUtils {
 		}
 
 		//transformedAnchor is now in player space.
-		Vec3f playerSpacePivot = new Vec3f((left ? 1 : -1) * 5*0.875f/16f, (playerEntity.isInSneakingPose() ? 18.8f : 22) * 0.875f / 16, 0);
+		float scalar = 0.875f/16f * sizeMul;
+		Vec3f playerSpacePivot = new Vec3f((left ? 5 : -5)*scalar, (playerEntity.isInSneakingPose() ? 18.8f : 22) * scalar, 0);
 		transformedAnchor.subtract(playerSpacePivot); //TransformedAnchor is now relative to the player space pivot.
 		return transformedAnchor;
 	}
+
+	//If your height modifier is different from width then the entire rendering is fucked anyway sooooo
+	//Not even going to try to deal with that, just going to have it assume height mod == width mod
+	public static float getSizeMultiplier(AbstractClientPlayerEntity playerEntity, float tickDelta) {
+		return QuiltLoader.isModLoaded("pehkui") ? ScaleUtils.getModelHeightScale(playerEntity, tickDelta) : 1;
+	}
+
+
 
 	//get that H!
 	//local variable from LivingEntityRenderer$render()
